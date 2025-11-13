@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Expense Advisor</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>AI Expense Advisor</h1>
+            </div>
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-label">Total Spent</span>
+                    <span class="stat-value" id="totalSpent">₹0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Categories</span>
+                    <span class="stat-value" id="categoryCount">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Monthly Salary</span>
+                    <span class="stat-value" id="monthlySalary">₹0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Remaining</span>
+                    <span class="stat-value stat-remaining" id="remainingBalance">₹0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </li>
+                    <li class="nav-item" data-tab="add-expense">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add Expense</span>
+                    </li>
+                    <li class="nav-item" data-tab="analytics">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                    </li>
+                    <li class="nav-item" data-tab="budget">
+                        <i class="fas fa-wallet"></i>
+                        <span>Budget Tips</span>
+                    </li>
+                    <li class="nav-item" data-tab="predictions">
+                        <i class="fas fa-crystal-ball"></i>
+                        <span>Predictions</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <h2>Expense Overview</h2>
+                    <div class="dashboard-grid">
+                        <div class="chart-container">
+                            <div id="categoryChart"></div>
+                        </div>
+                        <div class="recent-expenses">
+                            <h3>Recent Expenses</h3>
+                            <div id="recentExpensesList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Expense Tab -->
+                <div id="add-expense" class="tab-content">
+                    <h2>Add New Expense</h2>
+                    <div class="expense-form">
+                        <div class="form-group">
+                            <label for="expenseDescription">Description</label>
+                            <input type="text" id="expenseDescription" placeholder="e.g., Groceries at Walmart">
+                            <button onclick="categorizeExpense()" class="btn-secondary">
+                                <i class="fas fa-robot"></i> AI Categorize
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseAmount">Amount (₹)</label>
+                            <input type="number" id="expenseAmount" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseCategory">Category</label>
+                            <select id="expenseCategory">
+                                <option value="">Auto-detect with AI</option>
+                                <option value="Food">Food</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div id="aiSuggestion" class="ai-suggestion hidden">
+                            <i class="fas fa-lightbulb"></i>
+                            <span id="suggestionText"></span>
+                            <span id="confidenceBadge" class="confidence-badge"></span>
+                        </div>
+                        <button onclick="addExpense()" class="btn-primary">
+                            <i class="fas fa-save"></i> Add Expense
+                        </button>
+                        <button onclick="openSalaryModal()" class="btn-secondary btn-salary-set">
+                            <i class="fas fa-briefcase"></i> Set Monthly Salary
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics" class="tab-content">
+                    <h2>Spending Analytics</h2>
+                    <div class="analytics-grid">
+                        <div class="chart-container">
+                            <div id="monthlyTrendChart"></div>
+                        </div>
+                        <div class="chart-container">
+                            <div id="categoryBreakdownChart"></div>
+                        </div>
+                    </div>
+                    <div class="export-section">
+                        <button onclick="exportCSV()" class="btn-secondary">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Budget Tips Tab -->
+                <div id="budget" class="tab-content">
+                    <h2>AI Budget Suggestions</h2>
+                    <div class="budget-summary">
+                        <div class="budget-header">
+                            <h3>Monthly Budget Allocation</h3>
+                            <div class="salary-display" id="budgetSalaryDisplay">Salary: ₹0</div>
+                        </div>
+                    </div>
+                    <div id="budgetSuggestions" class="suggestions-grid"></div>
+                </div>
+
+                <!-- Predictions Tab -->
+                <div id="predictions" class="tab-content">
+                    <h2>Expense Predictions</h2>
+                    <div class="prediction-card">
+                        <div class="prediction-header">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Next Month Prediction</h3>
+                        </div>
+                        <div id="predictionContent" class="prediction-content">
+                            <p>Loading prediction...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
